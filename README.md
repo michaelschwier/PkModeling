@@ -1,3 +1,10 @@
+# CI Build Stats
+|                                | Linux and macOS                                                                                                                        | Windows                                                                                                                                                                     |
+|--------------------------------|----------------------------------------------------------------------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Build Status for latest master | [![Build Status](https://travis-ci.org/michaelschwier/PkModeling.svg?branch=master)](https://travis-ci.org/michaelschwier/PkModeling)  | [![AppVeyor](https://ci.appveyor.com/api/projects/status/fuq52ak3ry31o5yk/branch/master?svg=true)](https://ci.appveyor.com/project/michaelschwier/pkmodeling/branch/master) |
+
+
+
 # PkModeling
 PkModeling is a [3D Slicer Version 4](http://www.slicer.org) Extension that provides pharmacokinetic modeling for dynamic contrast enhanced MRI (DCE MRI)[1][2]. See documentation at https://www.slicer.org/wiki/Documentation/Nightly/Modules/PkModeling.
 
