@@ -340,9 +340,6 @@ namespace itk
 
   void compute_gradient_backward(int signalSize, const float* SignalY, float* SignalGradient);
 
-  float compute_s0_using_sumsignal_properties(int signalSize, const float* SignalY,
-    const short* lowGradIndex, int FirstPeak);
-
   float compute_s0_individual_curve(int signalSize, const float* SignalY, float S0GradThresh, const BolusArrivalTime::BolusArrivalTimeEstimator* batEstimator);
 
 };

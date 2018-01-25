@@ -411,34 +411,6 @@ namespace itk
     }
   }
 
-
-  float compute_s0_using_sumsignal_properties(int signalSize, const float* SignalY,
-    const short* lowGradIndex, int FirstPeak)
-  {
-    double S0 = 0;
-    int count = 0;
-    double sum = 0;
-    int first = FirstPeak;
-    if (FirstPeak > signalSize)
-    {
-      first = signalSize;
-    }
-    for (int i = 0; i < first; i++)
-    {
-      sum += SignalY[i];
-      if (lowGradIndex[i] == 1)
-      {
-        S0 += SignalY[i];
-        count++;
-      }
-    }
-    if (count)
-      S0 /= count;
-    else
-      S0 = sum / (first - 1);
-    return float(S0);
-  }
-
   float compute_s0_individual_curve(int signalSize, const float* SignalY, float S0GradThresh, const BolusArrivalTime::BolusArrivalTimeEstimator* batEstimator)
   {
     double S0 = 0;
