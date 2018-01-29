@@ -154,8 +154,13 @@ namespace itk
     void GenerateData();
     OutputImageType* GetAllocatedOutputVolume(const InputImageType* inputVectorVolume);
     InternalVolumePointerType GetS0Image(const InputImageType* inputVectorVolume);
-    InternalVectorVoxelType convertToInternalVectorVoxel(const InputPixelType& inputVectorVoxel);
-
+    void convertSignalToConcentration(unsigned int signalSize,
+                                      const float* SignalIntensityCurve,
+                                      const float T1Pre, float TR, float FA,
+                                      float* concentration,
+                                      float RGd_relaxivity,
+                                      float s0,
+                                      float S0GradThresh);
 
     void PrintSelf(std::ostream& os, Indent indent) const;
 

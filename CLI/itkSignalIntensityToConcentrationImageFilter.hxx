@@ -3,6 +3,9 @@
 #include "itkSignalIntensityToConcentrationImageFilter.h"
 #include "itkProgressReporter.h"
 
+#include "SignalComputationUtils.h"
+#include "ITKDataConversionUtils.hxx"
+
 namespace itk
 {
 
@@ -22,9 +25,9 @@ SignalIntensityToConcentrationImageFilter<TInputImage, TMaskImage, TOutputImage>
 template<class TInputImage, class TMaskImage, class TOutputImage>
 void SignalIntensityToConcentrationImageFilter<TInputImage, TMaskImage, TOutputImage>::GenerateData()
 {
-  const InputImageType* inputVectorVolume = this->GetInput();
+  InputImageConstPointerType inputVectorVolume = this->GetInput();
 
-  OutputImageType* outputVolume = this->GetAllocatedOutputVolume(inputVectorVolume);
+  OutputImagePointerType outputVolume = this->GetAllocatedOutputVolume(inputVectorVolume);
   InternalVolumePointerType S0Volume = this->GetS0Image(inputVectorVolume);
   InternalVolumeIterType S0VolumeIter(S0Volume, S0Volume->GetRequestedRegion());
   S0VolumeIter.GoToBegin();
@@ -42,18 +45,18 @@ void SignalIntensityToConcentrationImageFilter<TInputImage, TMaskImage, TOutputI
   // Convert signal intensities to concentration values
   while (!outVolumeIter.IsAtEnd())
   {
-    InternalVectorVoxelType vectorVoxel = this->convertToInternalVectorVoxel(inputVectorVolumeIter.Get());
+    InternalVectorVoxelType vectorVoxel = ITKUtils::convertVectorType<InputImageType::InternalPixelType, float>(inputVectorVolumeIter.Get());
     outputVectorVoxel.SetSize(vectorVoxel.GetSize());
     float T1Pre = t1PreMapper.Get();
     if (T1Pre)
     {
-      bool isConvert = convert_signal_to_concentration(inputVectorVolume->GetNumberOfComponentsPerPixel(),
-                                                       vectorVoxel.GetDataPointer(),
-                                                       T1Pre, m_TR, m_FA,
-                                                       concentrationVectorVoxelTemp,
-                                                       m_RGD_relaxivity,
-                                                       S0VolumeIter.Get(),
-                                                       m_S0GradThresh);
+      convertSignalToConcentration(inputVectorVolume->GetNumberOfComponentsPerPixel(),
+                                   vectorVoxel.GetDataPointer(),
+                                   T1Pre, m_TR, m_FA,
+                                   concentrationVectorVoxelTemp,
+                                   m_RGD_relaxivity,
+                                   S0VolumeIter.Get(),
+                                   m_S0GradThresh);
 
       for (typename OutputPixelType::ElementIdentifier i = 0; i < outputVectorVoxel.GetSize(); ++i)
       {
@@ -105,16 +108,38 @@ SignalIntensityToConcentrationImageFilter<TInputImage, TMaskImage, TOutputImage>
 
 
 template<class TInputImage, class TMaskImage, class TOutputImage>
-typename SignalIntensityToConcentrationImageFilter<TInputImage, TMaskImage, TOutputImage>::InternalVectorVoxelType
-SignalIntensityToConcentrationImageFilter<TInputImage, TMaskImage, TOutputImage>::convertToInternalVectorVoxel(const InputPixelType& inputVectorVoxel)
+void SignalIntensityToConcentrationImageFilter<TInputImage, TMaskImage, TOutputImage>::convertSignalToConcentration(unsigned int signalSize,
+  const float* SignalIntensityCurve, const float T1Pre, float TR, float FA, float* concentration, float RGd_relaxivity, float s0, float S0GradThresh)
 {
-  InternalVectorVoxelType vectorVoxel;
-  vectorVoxel.SetSize(inputVectorVoxel.GetSize());
-  vectorVoxel.Fill(0.0);
-  vectorVoxel += inputVectorVoxel; // shorthand for a copy/cast
-  return vectorVoxel;
-}
+  const double exp_TR_BloodT1 = exp(-TR / T1Pre);
+  const float alpha = FA * M_PI / 180;
+  const double cos_alpha = cos(alpha);
+  const double constB = (1 - exp_TR_BloodT1) / (1 - cos_alpha*exp_TR_BloodT1);
 
+  for (unsigned int t = 0; t < signalSize; ++t)
+  {
+    concentration[t] = 0;
+    const float tSignal = SignalIntensityCurve[t];
+    if (tSignal != 0) 
+    {
+      const double constA = tSignal / s0;
+      const double value = (1 - constA * constB) / (1 - constA * constB * cos_alpha);
+      const double log_value = log(value);
+      if (!isnan(log_value)) 
+      {
+        const float ROft = (-1 / TR) * log_value;
+        if (T1Pre != 0)
+        {
+          double Cb = (ROft - (1 / T1Pre)) / RGd_relaxivity;
+          assert(!isnan(Cb));
+          if (Cb < 0)
+            Cb = 0;
+          concentration[t] = static_cast<float>(Cb);
+        }
+      }
+    }
+  }
+}
 
 
 template <class TInputImage, class TMaskImage, class TOutput>

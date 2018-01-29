@@ -31,6 +31,7 @@ set(LIBRARY_SRCS
   IO/MultiVolumeMetaDictReader.h
   IO/MultiVolumeMetaDictReader.cxx
   Exceptions.h
+  ITKDataConversionUtils.hxx
   SignalComputationUtils.h
   SignalComputationUtils.cxx
   StringUtils.h

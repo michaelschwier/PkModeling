@@ -12,6 +12,9 @@
 
 #include "itkSignalIntensityToS0ImageFilter.h"
 
+#include "SignalComputationUtils.h"
+#include "ITKDataConversionUtils.hxx"
+
 namespace itk
 {
 
@@ -29,34 +32,67 @@ namespace itk
                            ThreadIdType itkNotUsed(threadId))
 #endif
   {
-    //Input is vector volume, output is volume
-
     const InputImageType* inputVectorVolume = this->GetInput();
-    OutputImageType* S0Volume = this->GetOutput();
+    OutputImageType* outputVolume = this->GetOutput();
 
-    InputImageConstIterType  inputVectorVolumeIter(inputVectorVolume, outputRegionForThread);
-    OutputImageIterType S0VolumeIter(S0Volume, outputRegionForThread);
-
-    float                   S0Temp = 0.0f;
-    InternalVectorVoxelType vectorVoxel;
-    InputPixelType inputVectorVoxel;
+    InputImageConstIterType inputVectorVolumeIter(inputVectorVolume, outputRegionForThread);
+    OutputImageIterType outputVolumeIter(outputVolume, outputRegionForThread);
 
     while (!inputVectorVolumeIter.IsAtEnd())
     {
-      // copy/cast input vector to floats
-      inputVectorVoxel = inputVectorVolumeIter.Get();
-      vectorVoxel.SetSize(inputVectorVoxel.GetSize());
-      vectorVoxel.Fill(0.0);
-      vectorVoxel += inputVectorVoxel; // shorthand for a copy/cast
-      S0Temp =
-        compute_s0_individual_curve((int)inputVectorVolume->GetNumberOfComponentsPerPixel(),
-        const_cast<float*>(vectorVoxel.GetDataPointer()), m_S0GradThresh, m_batEstimator);
-      S0VolumeIter.Set(static_cast<OutputPixelType>(S0Temp));
-      ++S0VolumeIter;
+      typedef InputImageType::InternalPixelType InPixelType;
+      typedef InternalVectorVoxelType::ComponentType OutPixelType;
+      InternalVectorVoxelType vectorVoxel = ITKUtils::convertVectorType<InPixelType, OutPixelType>(inputVectorVolumeIter.Get());
+      const OutputPixelType s0Value = computeS0(inputVectorVolume->GetNumberOfComponentsPerPixel(), vectorVoxel.GetDataPointer());
+      outputVolumeIter.Set(s0Value);
+
+      ++outputVolumeIter;
       ++inputVectorVolumeIter;
     }
-
   }
+
+  template <class TInputImage, class TOutput>
+  typename SignalIntensityToS0ImageFilter<TInputImage, TOutput>::OutputPixelType 
+  SignalIntensityToS0ImageFilter<TInputImage, TOutput>::computeS0(int signalSize, const float* signal)
+  {
+    int batIndex;
+    try {
+      batIndex = m_batEstimator->getBATIndex(signalSize, signal);
+    }
+    catch (...) {
+      return 0;
+    }
+
+    double s0 = 0;
+    float* signalGradient = new float[signalSize];
+    compute_gradient(signalSize, signal, signalGradient);
+
+    int count = 0;
+    double sum = 0;
+    for (int i = 0; i < batIndex; i++)
+    {
+      sum += signal[i];
+      if (signalGradient[i] < m_S0GradThresh) {
+        s0 += signal[i];
+        count++;
+      }
+    }
+    if (batIndex > 0) {
+      if (count) {
+        s0 /= count;
+      }
+      else {
+        s0 = sum / (batIndex);
+      }
+    }
+    else {
+      s0 = signal[0];
+    }
+
+    delete[] signalGradient;
+    return static_cast<OutputPixelType>(s0);
+  }
+
 
   /** Standard "PrintSelf" method */
   template <class TInputImage, class TOutput>

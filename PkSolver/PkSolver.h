@@ -316,14 +316,6 @@ namespace itk
   void pk_report();
   void pk_clear();
 
-  bool convert_signal_to_concentration(unsigned int signalSize,
-    const float* SignalIntensityCurve,
-    float T1, float TR, float FA,
-    float* concentration,
-    float relaxivity = 4.9E-3f,
-    float s0 = -1.0f,
-    float S0GradThresh = 15.0f);
-
   float area_under_curve(int signalSize, const float* timeAxis, const float* concentration, int BATIndex, float aucTimeInterval);
 
   float intergrate(float* yValues, float * xValues, int size);
@@ -339,8 +331,6 @@ namespace itk
   void compute_gradient_forward(int signalSize, const float* SignalY, float* SignalGradient);
 
   void compute_gradient_backward(int signalSize, const float* SignalY, float* SignalGradient);
-
-  float compute_s0_individual_curve(int signalSize, const float* SignalY, float S0GradThresh, const BolusArrivalTime::BolusArrivalTimeEstimator* batEstimator);
 
 };
 

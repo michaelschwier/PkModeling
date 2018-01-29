@@ -189,59 +189,6 @@ namespace itk
     probe.Clear();
   }
 
-#define PI 3.1415926535897932384626433832795
-#define IS_NAN(x) ((x) != (x))
-
-  bool convert_signal_to_concentration(unsigned int signalSize,
-    const float* SignalIntensityCurve,
-    const float T1Pre, float TR, float FA,
-    float* concentration,
-    float RGd_relaxivity,
-    float s0,
-    float S0GradThresh)
-  {
-    const double exp_TR_BloodT1 = exp(-TR / T1Pre);
-    const float alpha = FA * PI / 180;
-    const double cos_alpha = cos(alpha);
-    const double constB = (1 - exp_TR_BloodT1) / (1 - cos_alpha*exp_TR_BloodT1);
-
-    if (s0 == -1.0f)
-      s0 = compute_s0_individual_curve(signalSize, SignalIntensityCurve, S0GradThresh, m_batEstimator);
-
-    for (unsigned int t = 0; t < signalSize; ++t)
-    {
-      const float tSignal = SignalIntensityCurve[t];
-      if (tSignal == 0)
-      {
-        concentration[t] = 0;
-        continue;
-      }
-
-      const double constA = tSignal / s0;
-      double value = (1 - constA * constB) / (1 - constA * constB * cos_alpha);
-      double log_value = log(value);
-      if (IS_NAN(log_value))
-      {
-        concentration[t] = 0;
-      }
-      else {
-        const float ROft = (-1 / TR) * log_value;
-        if (T1Pre != 0)
-        {
-          double Cb = (ROft - (1 / T1Pre)) / RGd_relaxivity;
-          assert(IS_NAN(Cb) == false);
-          if (Cb < 0)
-            Cb = 0;
-          concentration[t] = float(Cb);
-        }
-        else
-          concentration[t] = 0;
-      }
-    }
-
-    return true;
-  }
-
   float area_under_curve(int signalSize,
     const float* timeAxis,
     const float* concentration,
@@ -409,52 +356,6 @@ namespace itk
     {
       SignalGradient[i] = sqrt(SignalGradient[i] * SignalGradient[i]);
     }
-  }
-
-  float compute_s0_individual_curve(int signalSize, const float* SignalY, float S0GradThresh, const BolusArrivalTime::BolusArrivalTimeEstimator* batEstimator)
-  {
-    double S0 = 0;
-    int ArrivalTime;
-    bool result;
-
-    try {
-      ArrivalTime = batEstimator->getBATIndex(signalSize, SignalY);
-    }
-    catch (...)
-    {
-      ///printf ("  Compute compute_s0_individual_curve fails! S0 = 0.\n");
-      return 0;
-    }
-
-    float* SignalGradient = new float[signalSize];
-    //above: same
-    compute_gradient(signalSize, SignalY, SignalGradient);
-
-    int count = 0;
-    double sum = 0;
-    for (int i = 0; i < ArrivalTime; i++)
-    { //updated to i<ArrivalTime by Yingxuan Zhu on 5/5/2012, original i<FirstPeak;
-      sum += SignalY[i];
-      if (SignalGradient[i] < S0GradThresh)
-      {
-        S0 += SignalY[i];
-        count++;
-      }
-      //std::cerr<<"sum, S0:"<<sum<<","<<S0<<"\n"<<std::endl;
-    }
-    if (ArrivalTime > 0)
-    {
-      if (count)
-        S0 /= count;
-      else
-        S0 = sum / (ArrivalTime); //updated to sum/(ArrivalTime) by Yingxuan Zhu on 5/5/2012, original sum/(FirstPeak-1);
-    }
-    else
-      S0 = SignalY[0]; //ArrivalTime is 0;
-
-    delete[] SignalGradient;
-    return float(S0);
-
   }
 
 }; // end of namespace

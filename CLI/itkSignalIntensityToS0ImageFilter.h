@@ -74,6 +74,9 @@ namespace itk
 #else
     void ThreadedGenerateData(const typename Superclass::OutputImageRegionType& outputRegionForThread, ThreadIdType threadId);
 #endif
+
+    OutputPixelType computeS0(int signalSize, const float* signal);
+
     void PrintSelf(std::ostream& os, Indent indent) const;
 
 
