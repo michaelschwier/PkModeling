@@ -2,6 +2,13 @@
 #define __SignalComputationUtils_h
 
 #include <vector>
+#include <math.h>
+
+// work around compile error on Windows.
+#ifndef M_PI
+#define M_PI 3.1415926535897932384626433832795
+#endif
+
 
 namespace SignalUtils {
   int getMaxPosition(int signalSize, const float* signal);

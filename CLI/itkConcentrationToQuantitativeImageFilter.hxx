@@ -8,11 +8,9 @@
 #include "itkLevenbergMarquardtOptimizer.h"
 #include "vnl/vnl_math.h"
 
-// work around compile error on Windows
-#define M_PI 3.1415926535897932384626433832795
-
 #include "itkConcentrationToQuantitativeImageFilter.h"
 
+#include "SignalComputationUtils.h"
 #include "AIF/ArterialInputFunction.h"
 
 namespace itk
