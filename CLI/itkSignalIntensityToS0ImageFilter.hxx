@@ -16,21 +16,17 @@ namespace itk
 {
 
   template <class TInputImage, class TOutputImage>
-  SignalIntensityToS0ImageFilter<TInputImage, TOutputImage>::SignalIntensityToS0ImageFilter()
-  {
-    m_S0GradThresh = 15.0f;
-
-  }
+  SignalIntensityToS0ImageFilter<TInputImage, TOutputImage>::SignalIntensityToS0ImageFilter() : m_S0GradThresh(15.0f)
+  { }
 
   template <class TInputImage, class TOutputImage>
   void SignalIntensityToS0ImageFilter<TInputImage, TOutputImage>
 #if ITK_VERSION_MAJOR < 4
-    ::ThreadedGenerateData( const typename Superclass::OutputImageRegionType & outputRegionForThread, int itkNotUsed(
-    threadId) )
+    ::ThreadedGenerateData(const typename Superclass::OutputImageRegionType & outputRegionForThread, 
+                           int itkNotUsed(threadId) )
 #else
     ::ThreadedGenerateData(const typename Superclass::OutputImageRegionType& outputRegionForThread,
-    ThreadIdType itkNotUsed(
-    threadId))
+                           ThreadIdType itkNotUsed(threadId))
 #endif
   {
     //Input is vector volume, output is volume
@@ -64,8 +60,7 @@ namespace itk
 
   /** Standard "PrintSelf" method */
   template <class TInputImage, class TOutput>
-  void SignalIntensityToS0ImageFilter<TInputImage, TOutput>
-    ::PrintSelf(std::ostream& os, Indent indent) const
+  void SignalIntensityToS0ImageFilter<TInputImage, TOutput>::PrintSelf(std::ostream& os, Indent indent) const
   {
     Superclass::PrintSelf(os, indent);
     os << indent << "S0GradThresh: " << m_S0GradThresh << std::endl;

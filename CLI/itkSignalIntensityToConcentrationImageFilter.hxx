@@ -118,7 +118,7 @@ SignalIntensityToConcentrationImageFilter<TInputImage, TMaskImage, TOutputImage>
 
 
 template <class TInputImage, class TMaskImage, class TOutput>
-void SignalIntensityToConcentrationImageFilter<TInputImage, TMaskImage, TOutput>::PrintSelf( std::ostream& os, Indent indent ) const
+void SignalIntensityToConcentrationImageFilter<TInputImage, TMaskImage, TOutput>::PrintSelf(std::ostream& os, Indent indent) const
 {
   Superclass::PrintSelf( os, indent );
   os << indent << "T1PreBlood: " << m_T1PreBlood << std::endl;

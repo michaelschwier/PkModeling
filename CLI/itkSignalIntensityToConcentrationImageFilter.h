@@ -18,7 +18,6 @@
 #include "itkSignalIntensityToS0ImageFilter.h"
 #include "itkImageFileWriter.h"
 
-#include "PkSolver.h"
 
 namespace itk
 {
@@ -43,54 +42,52 @@ namespace itk
   class SignalIntensityToConcentrationImageFilter : public ImageToImageFilter < TInputImage, TOutputImage >
   {
   public:
-    /** Convenient typedefs for simplifying declarations. */
-    typedef TInputImage                             InputImageType;
-    typedef typename InputImageType::Pointer        InputImagePointerType;
-    typedef typename InputImageType::ConstPointer   InputImageConstPointer;
-    typedef typename InputImageType::PixelType      InputPixelType;
-    typedef typename InputImageType::RegionType     InputImageRegionType;
-    typedef typename InputImageType::SizeType       InputSizeType;
-    typedef itk::ImageRegionConstIterator<InputImageType> InputImageConstIterType;
-
-    typedef TMaskImage                              InputMaskType;
-    typedef itk::ImageRegionConstIterator<InputMaskType> InputMaskConstIterType;
-
-    typedef TOutputImage                           OutputImageType;
-    typedef typename OutputImageType::Pointer      OutputImagePointer;
-    typedef typename OutputImageType::ConstPointer OutputImageConstPointer;
-    typedef typename OutputImageType::PixelType    OutputPixelType;
-    typedef typename OutputImageType::RegionType   OutputImageRegionType;
-    typedef itk::ImageRegionIterator<OutputImageType> OutputIterType;
-
-    typedef float                                  FloatPixelType;
-
-    typedef itk::Image<FloatPixelType, TInputImage::ImageDimension> InternalVolumeType;
-    typedef typename InternalVolumeType::Pointer         InternalVolumePointerType;
-    typedef itk::ImageRegionIterator<InternalVolumeType> InternalVolumeIterType;
-    typedef typename InternalVolumeType::RegionType      InternalVolumeRegionType;
-    typedef typename InternalVolumeType::SizeType        InternalVolumeSizeType;
-
-    typedef itk::VectorImage<FloatPixelType, TInputImage::ImageDimension> InternalVectorVolumeType;
-    typedef typename InternalVectorVolumeType::Pointer         InternalVectorVolumePointerType;
-    typedef itk::ImageRegionConstIterator<InternalVectorVolumeType> InternalVectorVolumeConstIterType;
-    typedef typename InternalVectorVolumeType::RegionType      InternalVectorVolumeRegionType;
-    typedef typename InternalVectorVolumeType::SizeType        InternalVectorVolumeSizeType;
-
-    typedef itk::VariableLengthVector<float> InternalVectorVoxelType;
-
     /** Standard class typedefs. */
-    typedef SignalIntensityToConcentrationImageFilter Self;
+    typedef SignalIntensityToConcentrationImageFilter           Self;
     typedef ImageToImageFilter<InputImageType, OutputImageType> Superclass;
     typedef SmartPointer<Self>                                  Pointer;
     typedef SmartPointer<const Self>                            ConstPointer;
 
+    /** Convenient typedefs for simplifying declarations. */
+    typedef TInputImage                                   InputImageType;
+    typedef typename InputImageType::Pointer              InputImagePointerType;
+    typedef typename InputImageType::ConstPointer         InputImageConstPointerType;
+    typedef typename InputImageType::PixelType            InputPixelType;
+    typedef itk::ImageRegionConstIterator<InputImageType> InputImageConstIterType;
+
+    typedef TMaskImage                                   InputMaskType;
+    typedef itk::ImageRegionConstIterator<InputMaskType> InputMaskConstIterType;
+
+    typedef TOutputImage                              OutputImageType;
+    typedef typename OutputImageType::Pointer         OutputImagePointerType;
+    typedef typename OutputImageType::ConstPointer    OutputImageConstPointerType;
+    typedef typename OutputImageType::PixelType       OutputPixelType;
+    typedef typename OutputImageType::RegionType      OutputImageRegionType;
+    typedef itk::ImageRegionIterator<OutputImageType> OutputIterType;
+
+  private:
+    typedef itk::Image<float, TInputImage::ImageDimension> InternalVolumeType;
+    typedef typename InternalVolumeType::Pointer           InternalVolumePointerType;
+    typedef itk::ImageRegionIterator<InternalVolumeType>   InternalVolumeIterType;
+    typedef typename InternalVolumeType::RegionType        InternalVolumeRegionType;
+    typedef typename InternalVolumeType::SizeType          InternalVolumeSizeType;
+
+    typedef itk::VectorImage<float, TInputImage::ImageDimension>    InternalVectorVolumeType;
+    typedef typename InternalVectorVolumeType::Pointer              InternalVectorVolumePointerType;
+    typedef itk::ImageRegionConstIterator<InternalVectorVolumeType> InternalVectorVolumeConstIterType;
+    typedef typename InternalVectorVolumeType::RegionType           InternalVectorVolumeRegionType;
+    typedef typename InternalVectorVolumeType::SizeType             InternalVectorVolumeSizeType;
+
+    typedef itk::VariableLengthVector<float> InternalVectorVoxelType;
+
+  public:
     /** Method for creation through the object factory. */
     itkNewMacro(Self);
 
     /** Run-time type information (and related methods). */
     itkTypeMacro(SignalIntensityToConcentrationImageFilter, ImageToImageFilter);
 
-    /** Set and get the number of DWI channels. */
+    /** Parameter getters/setters. */
     itkGetMacro(T1PreBlood, float);
     itkSetMacro(T1PreBlood, float);
     itkGetMacro(T1PreTissue, float);
@@ -107,11 +104,7 @@ namespace itk
     void SetBatEstimator(const BolusArrivalTime::BolusArrivalTimeEstimator* batEstimator)
     {
       m_batEstimator = batEstimator;
-    }
-
-    const BolusArrivalTime::BolusArrivalTimeEstimator* GetBatEstimator() const
-    {
-      return this->m_batEstimator;
+      this->Modified();
     }
 
     // Set a mask image for specifying the location of the arterial
@@ -156,8 +149,7 @@ namespace itk
     SignalIntensityToConcentrationImageFilter();
 
     virtual ~SignalIntensityToConcentrationImageFilter()
-    {
-    }
+    { }
 
     void GenerateData();
     OutputImageType* GetAllocatedOutputVolume(const InputImageType* inputVectorVolume);
@@ -168,14 +160,8 @@ namespace itk
     void PrintSelf(std::ostream& os, Indent indent) const;
 
   private:
-    SignalIntensityToConcentrationImageFilter(const Self &); //
-    // purposely
-    // not
-    // implemented
-    void operator=(const Self &);                                      //
-    // purposely
-    // not
-    // implemented
+    SignalIntensityToConcentrationImageFilter(const Self &); // not implemented on purpose
+    void operator=(const Self &); // not implemented on purpose
 
     float m_T1PreBlood;
     float m_T1PreTissue;
@@ -185,6 +171,7 @@ namespace itk
     float m_S0GradThresh;
     const BolusArrivalTime::BolusArrivalTimeEstimator* m_batEstimator;
 
+    //------------------------------------------------------------------------------------------------------------------------
     //! Private internal helper class to handle getting the correct T1Pre value.
     //! Use it like an Iterator to walk through the voxel positions.
     class T1PreValueMapper {
@@ -209,6 +196,7 @@ namespace itk
       float m_T1PreBlood;
 
     }; // end T1PreValueIterator class
+    //------------------------------------------------------------------------------------------------------------------------
 
   };
 

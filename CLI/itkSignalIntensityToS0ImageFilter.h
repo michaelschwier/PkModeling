@@ -43,7 +43,7 @@ namespace itk
     typedef itk::VariableLengthVector<float> InternalVectorVoxelType;
 
     /** Standard class typedefs. */
-    typedef SignalIntensityToS0ImageFilter                                 Self;
+    typedef SignalIntensityToS0ImageFilter                      Self;
     typedef ImageToImageFilter<InputImageType, OutputImageType> Superclass;
     typedef SmartPointer<Self>                                  Pointer;
     typedef SmartPointer<const Self>                            ConstPointer;
@@ -54,42 +54,34 @@ namespace itk
     /** Run-time type information (and related methods). */
     itkTypeMacro(SignalIntensityToS0ImageFilter, ImageToImageFilter);
 
-    /** Set and get the number of DWI channels. */
+    /** Parameter getters/setters. */
     itkGetMacro(S0GradThresh, float);
     itkSetMacro(S0GradThresh, float);
 
     void SetBatEstimator(const BolusArrivalTime::BolusArrivalTimeEstimator* batEstimator)
     {
       m_batEstimator = batEstimator;
+      this->Modified();
     }
-
-    const BolusArrivalTime::BolusArrivalTimeEstimator* GetBatEstimator() const
-    {
-      return this->m_batEstimator;
-    }
-
 
   protected:
     SignalIntensityToS0ImageFilter();
     virtual ~SignalIntensityToS0ImageFilter() 
-    {
-    }
+    { }
+
+#if ITK_VERSION_MAJOR < 4
+    void ThreadedGenerateData(const typename Superclass::OutputImageRegionType& outputRegionForThread, int threadId);
+#else
+    void ThreadedGenerateData(const typename Superclass::OutputImageRegionType& outputRegionForThread, ThreadIdType threadId);
+#endif
     void PrintSelf(std::ostream& os, Indent indent) const;
 
 
-#if ITK_VERSION_MAJOR < 4
-    void ThreadedGenerateData( const typename Superclass::OutputImageRegionType& outputRegionForThread, int threadId );
-
-#else
-    void ThreadedGenerateData(const typename Superclass::OutputImageRegionType& outputRegionForThread,
-      ThreadIdType threadId);
-
-#endif
   private:
     SignalIntensityToS0ImageFilter(const Self &); // purposely not implemented
-    void operator=(const Self &);      // purposely not implemented
+    void operator=(const Self &); // purposely not implemented
 
-    float                  m_S0GradThresh;
+    float m_S0GradThresh;
     const BolusArrivalTime::BolusArrivalTimeEstimator* m_batEstimator;
   };
 
