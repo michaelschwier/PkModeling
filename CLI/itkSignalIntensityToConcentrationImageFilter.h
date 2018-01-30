@@ -42,12 +42,6 @@ namespace itk
   class SignalIntensityToConcentrationImageFilter : public ImageToImageFilter < TInputImage, TOutputImage >
   {
   public:
-    /** Standard class typedefs. */
-    typedef SignalIntensityToConcentrationImageFilter           Self;
-    typedef ImageToImageFilter<InputImageType, OutputImageType> Superclass;
-    typedef SmartPointer<Self>                                  Pointer;
-    typedef SmartPointer<const Self>                            ConstPointer;
-
     /** Convenient typedefs for simplifying declarations. */
     typedef TInputImage                                   InputImageType;
     typedef typename InputImageType::Pointer              InputImagePointerType;
@@ -64,6 +58,12 @@ namespace itk
     typedef typename OutputImageType::PixelType       OutputPixelType;
     typedef typename OutputImageType::RegionType      OutputImageRegionType;
     typedef itk::ImageRegionIterator<OutputImageType> OutputIterType;
+
+    /** Standard class typedefs. */
+    typedef SignalIntensityToConcentrationImageFilter           Self;
+    typedef ImageToImageFilter<InputImageType, OutputImageType> Superclass;
+    typedef SmartPointer<Self>                                  Pointer;
+    typedef SmartPointer<const Self>                            ConstPointer;
 
   private:
     typedef itk::Image<float, TInputImage::ImageDimension> InternalVolumeType;

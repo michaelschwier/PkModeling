@@ -41,11 +41,12 @@ void SignalIntensityToConcentrationImageFilter<TInputImage, TMaskImage, TOutputI
   OutputPixelType outputVectorVoxel;
 
   ProgressReporter progress(this, 0, outputVolume->GetRequestedRegion().GetNumberOfPixels());
-  
+
   // Convert signal intensities to concentration values
   while (!outVolumeIter.IsAtEnd())
   {
-    InternalVectorVoxelType vectorVoxel = ITKUtils::convertVectorType<InputImageType::InternalPixelType, float>(inputVectorVolumeIter.Get());
+    typedef typename InputImageType::InternalPixelType InPixelType;
+    InternalVectorVoxelType vectorVoxel = ITKUtils::convertVectorType<InPixelType, float>(inputVectorVolumeIter.Get());
     outputVectorVoxel.SetSize(vectorVoxel.GetSize());
     float T1Pre = t1PreMapper.Get();
     if (T1Pre)
@@ -120,12 +121,12 @@ void SignalIntensityToConcentrationImageFilter<TInputImage, TMaskImage, TOutputI
   {
     concentration[t] = 0;
     const float tSignal = SignalIntensityCurve[t];
-    if (tSignal != 0) 
+    if (tSignal != 0)
     {
       const double constA = tSignal / s0;
       const double value = (1 - constA * constB) / (1 - constA * constB * cos_alpha);
       const double log_value = log(value);
-      if (!isnan(log_value)) 
+      if (!isnan(log_value))
       {
         const float ROft = (-1 / TR) * log_value;
         if (T1Pre != 0)
@@ -160,9 +161,9 @@ void SignalIntensityToConcentrationImageFilter<TInputImage, TMaskImage, TOutput>
 
 template<class TInputImage, class TMaskImage, class TOutputImage>
 SignalIntensityToConcentrationImageFilter<TInputImage, TMaskImage, TOutputImage>::T1PreValueMapper::T1PreValueMapper(const InputMaskType* roiMask,
-                                                                                                                     const InputMaskType* aifMask, 
-                                                                                                                     const InputMaskType* t1Map, 
-                                                                                                                     float t1PreTissue, 
+                                                                                                                     const InputMaskType* aifMask,
+                                                                                                                     const InputMaskType* t1Map,
+                                                                                                                     float t1PreTissue,
                                                                                                                      float t1PreBlood)
 {
   this->m_T1PreTissue = t1PreTissue;

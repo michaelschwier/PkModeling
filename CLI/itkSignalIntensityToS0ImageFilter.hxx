@@ -25,7 +25,7 @@ namespace itk
   template <class TInputImage, class TOutputImage>
   void SignalIntensityToS0ImageFilter<TInputImage, TOutputImage>
 #if ITK_VERSION_MAJOR < 4
-    ::ThreadedGenerateData(const typename Superclass::OutputImageRegionType & outputRegionForThread, 
+    ::ThreadedGenerateData(const typename Superclass::OutputImageRegionType & outputRegionForThread,
                            int itkNotUsed(threadId) )
 #else
     ::ThreadedGenerateData(const typename Superclass::OutputImageRegionType& outputRegionForThread,
@@ -40,8 +40,8 @@ namespace itk
 
     while (!inputVectorVolumeIter.IsAtEnd())
     {
-      typedef InputImageType::InternalPixelType InPixelType;
-      typedef InternalVectorVoxelType::ComponentType OutPixelType;
+      typedef typename InputImageType::InternalPixelType InPixelType;
+      typedef typename InternalVectorVoxelType::ComponentType OutPixelType;
       InternalVectorVoxelType vectorVoxel = ITKUtils::convertVectorType<InPixelType, OutPixelType>(inputVectorVolumeIter.Get());
       const OutputPixelType s0Value = computeS0(inputVectorVolume->GetNumberOfComponentsPerPixel(), vectorVoxel.GetDataPointer());
       outputVolumeIter.Set(s0Value);
@@ -52,7 +52,7 @@ namespace itk
   }
 
   template <class TInputImage, class TOutput>
-  typename SignalIntensityToS0ImageFilter<TInputImage, TOutput>::OutputPixelType 
+  typename SignalIntensityToS0ImageFilter<TInputImage, TOutput>::OutputPixelType
   SignalIntensityToS0ImageFilter<TInputImage, TOutput>::computeS0(int signalSize, const float* signal)
   {
     int batIndex;
